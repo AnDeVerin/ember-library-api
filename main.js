@@ -2,7 +2,6 @@ import Koa from 'koa';
 import logger from 'koa-logger';
 import bodyParser from 'koa-bodyparser';
 import cors from '@koa/cors';
-import Router from 'koa-router';
 
 import config from './config/app';
 import router from './routes/index';
