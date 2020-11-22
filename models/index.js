@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import Sequelize from 'sequelize';
 import dbConfig from '../config/db';
+import NotFoundError from '../errors/not-found';
 
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
@@ -32,9 +33,21 @@ fs.readdirSync(__dirname)
   });
 
 Object.keys(db).forEach((modelName) => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
+  const Model = db[modelName];
+
+  if (Model.associate) {
+    Model.associate(db);
   }
+
+  Model.findOrFail = async (id) => {
+    const m = await Model.findByPk(id);
+
+    if (m === null) {
+      throw new NotFoundError(modelName, id);
+    }
+
+    return m;
+  };
 });
 
 db.sequelize = sequelize;
