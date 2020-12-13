@@ -1,4 +1,5 @@
 import Router from 'koa-router';
+import Sequelize from 'sequelize';
 
 const router = new Router();
 
@@ -17,7 +18,20 @@ const serialize = (model) => {
 };
 
 router.get('/', async (ctx) => {
-  const authors = await ctx.app.db.Author.findAll();
+  const query = ctx.query['filter[query]'];
+
+  const select = query
+    ? {
+        where: {
+          [Sequelize.Op.or]: [
+            { first: { [Sequelize.Op.iLike]: `%${query}%` } },
+            { last: { [Sequelize.Op.iLike]: `%${query}%` } },
+          ],
+        },
+      }
+    : {};
+
+  const authors = await ctx.app.db.Author.findAll(select);
 
   ctx.body = { data: authors.map(serialize) };
 });
