@@ -3,20 +3,6 @@ import Sequelize from 'sequelize';
 
 const router = new Router();
 
-const serialize = (model) => {
-  return {
-    type: 'authors',
-    id: model.id,
-    attributes: {
-      first: model.first,
-      last: model.last,
-    },
-    links: {
-      self: `/authors/${model.id}`,
-    },
-  };
-};
-
 router.get('/', async (ctx) => {
   const query = ctx.query['filter[query]'];
 
@@ -33,14 +19,22 @@ router.get('/', async (ctx) => {
 
   const authors = await ctx.app.db.Author.findAll(select);
 
-  ctx.body = { data: authors.map(serialize) };
+  ctx.body = ctx.app.serialize('author', authors);
 });
 
 router.get('/:id', async (ctx) => {
   const { id } = ctx.params;
   const author = await ctx.app.db.Author.findOrFail(id);
 
-  ctx.body = { data: serialize(author) };
+  ctx.body = ctx.app.serialize('author', author);
+});
+
+router.get('/:id/books', async (ctx) => {
+  const { id } = ctx.params;
+  const author = await ctx.app.db.Author.findOrFail(id);
+  const books = await author.getBooks();
+
+  ctx.body = ctx.app.serialize('book', books);
 });
 
 router.post('/', async (ctx) => {
@@ -49,7 +43,7 @@ router.post('/', async (ctx) => {
 
   ctx.status = 201;
   ctx.set('Location', `/authors/${author.id}`);
-  ctx.body = { data: serialize(author) };
+  ctx.body = ctx.app.serialize('author', author);
 });
 
 router.patch('/:id', async (ctx) => {
@@ -59,7 +53,7 @@ router.patch('/:id', async (ctx) => {
 
   author.set(attrs);
   await author.save();
-  ctx.body = { data: serialize(author) };
+  ctx.body = ctx.app.serialize('author', author);
 });
 
 router.del('/:id', async (ctx) => {
