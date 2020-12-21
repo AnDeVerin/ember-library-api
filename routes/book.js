@@ -46,19 +46,13 @@ router.get('/:id/reviews', async (ctx) => {
 });
 
 router.post('/', async (ctx) => {
-  const attrs = ctx.request.body.data.attributes;
-  attrs.AuthorId = ctx.request.body.data.relationships.author.data.id;
-  attrs.publishDate = attrs['publish-date'];
-
+  const attrs = ctx.getAttributes();
   const book = await ctx.app.db.Book.create(attrs);
   ctx.body = ctx.app.serialize('book', book);
 });
 
 router.patch('/:id', async (ctx) => {
-  const attrs = ctx.request.body.data.attributes;
-  attrs.AuthorId = ctx.request.body.data.relationships.author.data.id;
-  attrs.publishDate = attrs['publish-date'];
-
+  const attrs = ctx.getAttributes();
   const { id } = ctx.params;
   const book = await ctx.app.db.Book.findOrFail(id);
 
