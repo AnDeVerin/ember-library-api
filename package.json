@@ -6,13 +6,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon index.js",
+    "start:dev": "nodemon index.js",
+    "start:debug": "nodemon --inspect index.js",
     "db:create": "sequelize-esm db:create"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@koa/cors": "^3.1.0",
+    "bcrypt": "^5.0.0",
     "dotenv": "^8.2.0",
     "esm": "^3.2.25",
     "inflected": "^2.1.0",

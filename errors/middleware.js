@@ -1,3 +1,5 @@
+import { ValidationError, UniqueConstraintError } from 'sequelize';
+import { underscore, dasherize } from 'inflected';
 import NotFoundError from './not-found';
 
 export default async (ctx, next) => {
@@ -16,6 +18,29 @@ export default async (ctx, next) => {
               detail: `${err.modelName} not found with the id '${err.id}'`,
             },
           ],
+        };
+        break;
+
+      case UniqueConstraintError:
+      case ValidationError:
+        ctx.status = 422;
+        ctx.body = {
+          errors: err.errors.map((valError) => {
+            const attr = dasherize(underscore(valError.path));
+            const title =
+              valError.validatorKey === 'notEmpty'
+                ? `${attr} can't be blank`
+                : valError.message;
+
+            return {
+              status: 422,
+              code: 100,
+              title,
+              source: {
+                pointer: `/data/attributes/${attr}`,
+              },
+            };
+          }),
         };
         break;
 
