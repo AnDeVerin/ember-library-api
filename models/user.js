@@ -1,3 +1,5 @@
+import NotFound from '../errors/not-found';
+
 const createModel = (sequelize, DataTypes) => {
   const User = sequelize.define(
     'User',
@@ -57,6 +59,18 @@ const createModel = (sequelize, DataTypes) => {
 
   User.associate = (/* models */) => {
     // associations can be defined here
+  };
+
+  User.findByEmail = async (email) => {
+    const user = await User.findOne({
+      where: { email },
+    });
+
+    if (user === null) {
+      throw new NotFound();
+    }
+
+    return user;
   };
 
   return User;
