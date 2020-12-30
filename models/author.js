@@ -6,6 +6,7 @@ export default (sequelize, DataTypes) => {
 
   Author.associate = (models) => {
     Author.hasMany(models.Book);
+    Author.belongsTo(models.User);
   };
 
   return Author;

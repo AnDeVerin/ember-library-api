@@ -39,8 +39,8 @@ Object.keys(db).forEach((modelName) => {
     Model.associate(db);
   }
 
-  Model.findOrFail = async (id) => {
-    const m = await Model.findByPk(id);
+  Model.findOrFail = async (id, options) => {
+    const m = await Model.findByPk(id, options);
 
     if (m === null) {
       throw new NotFoundError(modelName, id);

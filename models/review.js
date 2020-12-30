@@ -2,7 +2,6 @@ const createModel = (sequelize, DataTypes) => {
   const Review = sequelize.define(
     'Review',
     {
-      user: DataTypes.STRING,
       body: DataTypes.STRING,
     },
     {},
@@ -10,6 +9,7 @@ const createModel = (sequelize, DataTypes) => {
 
   Review.associate = (models) => {
     Review.belongsTo(models.Book);
+    Review.belongsTo(models.User);
   };
   return Review;
 };

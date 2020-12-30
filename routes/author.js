@@ -1,7 +1,10 @@
 import Router from 'koa-router';
 import Sequelize from 'sequelize';
+import currentUser from '../middleware/current-user';
 
 const router = new Router();
+
+const includeUser = { include: ['User'] };
 
 router.get('/', async (ctx) => {
   const query = ctx.query['filter[query]'];
@@ -14,8 +17,9 @@ router.get('/', async (ctx) => {
             { last: { [Sequelize.Op.iLike]: `%${query}%` } },
           ],
         },
+        ...includeUser,
       }
-    : {};
+    : { ...includeUser };
 
   const authors = await ctx.app.db.Author.findAll(select);
 
@@ -24,7 +28,7 @@ router.get('/', async (ctx) => {
 
 router.get('/:id', async (ctx) => {
   const { id } = ctx.params;
-  const author = await ctx.app.db.Author.findOrFail(id);
+  const author = await ctx.app.db.Author.findOrFail(id, includeUser);
 
   ctx.body = ctx.app.serialize('author', author);
 });
@@ -32,14 +36,16 @@ router.get('/:id', async (ctx) => {
 router.get('/:id/books', async (ctx) => {
   const { id } = ctx.params;
   const author = await ctx.app.db.Author.findOrFail(id);
-  const books = await author.getBooks();
+  const books = await author.getBooks(includeUser);
 
   ctx.body = ctx.app.serialize('book', books);
 });
 
-router.post('/', async (ctx) => {
+router.post('/', currentUser, async (ctx) => {
   const attrs = ctx.getAttributes();
+  attrs.UserId = ctx.currentUser.id;
   const author = await ctx.app.db.Author.create(attrs);
+  author.User = ctx.currentUser;
 
   ctx.status = 201;
   ctx.set('Location', `/authors/${author.id}`);
@@ -49,7 +55,7 @@ router.post('/', async (ctx) => {
 router.patch('/:id', async (ctx) => {
   const attrs = ctx.getAttributes();
   const { id } = ctx.params;
-  const author = await ctx.app.db.Author.findOrFail(id);
+  const author = await ctx.app.db.Author.findOrFail(id, includeUser);
 
   author.set(attrs);
   await author.save();
