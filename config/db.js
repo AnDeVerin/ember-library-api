@@ -11,5 +11,11 @@ export default {
     dialect: process.env.DB_DIALECT,
   },
   test: {},
-  production: {},
+  production: {
+    use_env_variable: 'DATABASE_URL',
+    dialect: 'postgres',
+    dialectOptions: {
+      ssl: true,
+    },
+  },
 };
