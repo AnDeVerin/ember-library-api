@@ -11,9 +11,9 @@ export default async (ctx, next) => {
     const result = await verify(token, process.env.JWT_SECRET);
 
     ctx.currentUser = await ctx.app.db.User.findOrFail(result.sub);
-
-    await next(ctx);
   } catch (error) {
     throw new UnauthorizedError();
   }
+
+  await next(ctx);
 };

@@ -1,5 +1,6 @@
 import Router from 'koa-router';
 import currentUser from '../middleware/current-user';
+import ForbiddenError from '../errors/forbidden';
 
 const router = new Router();
 
@@ -35,19 +36,27 @@ router.post('/', currentUser, async (ctx) => {
   ctx.body = ctx.app.serialize('review', review);
 });
 
-router.patch('/:id', async (ctx) => {
+router.patch('/:id', currentUser, async (ctx) => {
   const attrs = ctx.getAttributes();
   const { id } = ctx.params;
   const review = await ctx.app.db.Review.findOrFail(id, includeUser);
+
+  if (ctx.currentUser.id !== review.UserId) {
+    throw new ForbiddenError();
+  }
 
   review.set(attrs);
   await review.save();
   ctx.body = ctx.app.serialize('review', review);
 });
 
-router.del('/:id', async (ctx) => {
+router.del('/:id', currentUser, async (ctx) => {
   const { id } = ctx.params;
   const review = await ctx.app.db.Review.findOrFail(id);
+
+  if (ctx.currentUser.id !== review.UserId) {
+    throw new ForbiddenError();
+  }
 
   await review.destroy();
   ctx.status = 204;
